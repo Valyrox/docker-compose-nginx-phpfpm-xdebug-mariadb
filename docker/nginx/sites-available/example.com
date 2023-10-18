@@ -19,7 +19,7 @@ server {
         return 404;
       }
 
-      fastcgi_pass php-fpm:9000;
+      fastcgi_pass unix:/var/run/php-fpm.sock;
       fastcgi_index index.php;
       fastcgi_read_timeout 300;
       fastcgi_buffers 16 16k;
