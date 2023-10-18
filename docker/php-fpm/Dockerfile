@@ -4,20 +4,38 @@ WORKDIR "/app"
 # Update
 RUN apt-get update
 
-# Install ZIP
-RUN apt-get install -y libzip-dev zip
+# Install PHP extensions dependencies
+RUN apt-get update && apt-get install --no-install-recommends -y \
+        libmcrypt-dev \
+        zlib1g-dev \
+        libicu-dev \
+        g++ \
+        unixodbc-dev \
+        libxml2-dev \
+        libaio-dev \
+        libmemcached-dev \
+        freetds-dev \
+        libonig-dev \
+        libfreetype-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
+        libssl-dev \
+        libzip-dev \
+        openssl \
+        curl \
+        wget \
+        vim \
+        git \
+        unzip
 
 # Install PHP extensions
-RUN docker-php-ext-install zip pdo pdo_mysql mysqli
+RUN docker-php-ext-install zip pdo pdo_mysql mysqli iconv mbstring intl gd sockets pcntl ftp bcmath gettext
 
 # Install Redis
 RUN pecl install -o -f redis && docker-php-ext-enable redis
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Install xdebug
-RUN pecl install xdebug-3.3.0alpha2 && docker-php-ext-enable xdebug
 
 # Cleanup
 RUN apt-get clean
