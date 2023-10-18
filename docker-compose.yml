@@ -7,6 +7,9 @@ networks:
         external: true
         name: traefik-network
 
+volumes:
+    php-fpm-socket:
+
 services:
     nginx:
         image: "nginx:1.25.2-alpine"
@@ -16,14 +19,17 @@ services:
             - php-fpm
         volumes:
             - ".:/app"
-            - "./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf"
+            - "./docker/nginx/nginx.conf:/etc/nginx/nginx.conf"
+            - "./docker/nginx/sites-available:/etc/nginx/sites-available"
+            - "./docker/nginx/sites-enabled:/etc/nginx/sites-enabled"
+            - 'php-fpm-socket:/var/run/php-fpm'
         networks:
             - web-network
             - traefik-network
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=traefik-network"
-            # Portainer
+            # NGINX
             - "traefik.http.routers.nginx.rule=HostRegexp(`{domain:.+}`)"
             - "traefik.http.routers.nginx.priority=1"
             - "traefik.http.routers.nginx.service=nginx-svc"
@@ -31,6 +37,8 @@ services:
             - "traefik.http.routers.nginx.entrypoints=websecure"
             - "traefik.http.routers.nginx.tls=true"
             - "traefik.http.routers.nginx.tls.certresolver=letsencrypt"
+        depends_on:
+            - php-fpm
 
     php-fpm:
         build: docker/php-fpm
@@ -41,8 +49,23 @@ services:
         volumes:
             - ".:/app"
             - "./docker/php-fpm/php-overrides.ini:/usr/local/etc/php/conf.d/php-overrides.ini"
+            - 'php-fpm-socket:/var/run/php/php8.3-fpm.sock'
         networks:
             - web-network
+
+    adminer:
+        image: adminer
+        restart: always
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=traefik-network"
+            # Adminer
+            - "traefik.http.routers.adminer.rule=Host(`${ADMINER_HOSTNAME}`)"
+            - "traefik.http.routers.adminer.service=adminer-svc"
+            - "traefik.http.services.adminer-svc.loadbalancer.server.port=8080"
+            - "traefik.http.routers.adminer.entrypoints=websecure"
+            - "traefik.http.routers.adminer.tls=true"
+            - "traefik.http.routers.adminer.tls.certresolver=letsencrypt"
 
     mariadb:
         image: "mariadb:11.1.2"
@@ -57,9 +80,6 @@ services:
             - web-network
         environment:
             MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
-            MARIADB_DATABASE: "${MARIADB_DATABASE}"
-            MARIADB_USER: "${MARIADB_USER}"
-            MARIADB_PASSWORD: "${MARIADB_PASSWORD}"
         ports:
             - "3306:3306"
         healthcheck:
