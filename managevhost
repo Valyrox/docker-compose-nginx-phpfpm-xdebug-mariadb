@@ -1,0 +1,35 @@
+#!/bin/bash
+
+. /lib/lsb/init-functions
+file="docker/nginx/sites-available/$2"
+
+case "$1" in
+enable)
+        if [ -f "$file" ]
+        then
+                log_daemon_msg "Enabling..."
+                sudo ln -s docker/nginx/sites-available/"$2" docker/nginx/sites-enabled/"$2"
+                sudo docker exec web-nginx nginx -s reload
+                log_end_msg 0 || true
+        else
+                log_failure_msg "File not found"
+        fi
+;;
+disable)
+        if [ -f "$file" ]
+        then
+                log_daemon_msg "Disabling..."
+                sudo rm docker/nginx/sites-enabled/"$2"
+                sudo docker exec web-nginx nginx -s reload
+                log_end_msg 0 || true
+        else
+                log_failure_msg "File not found"
+        fi
+;;
+*)
+echo "Usage: $0 {enable <vhost-name>|disable <vhost-name>}"
+exit 0
+;;
+esac
+
+exit 0
