@@ -3,7 +3,7 @@ server {
 
   server_name example.com;
 
-  root /app/public/example;
+  root /app/public/example.com;
 
   error_log /var/log/nginx/example.com.log;
   access_log /dev/null;
