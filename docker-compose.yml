@@ -13,6 +13,7 @@ volumes:
 services:
     nginx:
         image: "nginx:1.25.2-alpine"
+        container_name: web-nginx
         restart: always
         working_dir: /app
         links:
@@ -42,6 +43,7 @@ services:
 
     php-fpm:
         build: docker/php-fpm
+        container_name: web-php-fpm
         restart: always
         working_dir: /app
         links:
@@ -55,6 +57,7 @@ services:
 
     adminer:
         image: adminer
+        container_name: web-adminer
         restart: always
         labels:
             - "traefik.enable=true"
@@ -69,6 +72,7 @@ services:
 
     mariadb:
         image: "mariadb:11.1.2"
+        container_name: web-mariadb
         restart: always
         working_dir: /app
         volumes:
@@ -89,6 +93,7 @@ services:
 
     redis:
         image: "redis:7.2.1-alpine"
+        container_name: web-redis
         networks:
             - web-network
         environment:
