@@ -22,7 +22,7 @@ services:
             - "./docker/nginx/nginx.conf:/etc/nginx/nginx.conf"
             - "./docker/nginx/sites-available:/etc/nginx/sites-available"
             - "./docker/nginx/sites-enabled:/etc/nginx/sites-enabled"
-            - 'php-fpm-socket:/var/run/php-fpm'
+            - 'php-fpm-socket:/var/run/php-fpm.sock'
         networks:
             - web-network
             - traefik-network
